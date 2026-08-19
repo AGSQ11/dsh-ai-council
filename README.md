@@ -211,7 +211,7 @@ The file stores configuration, roles, templates and bounded council history. It 
 From a local checkout:
 
 ```powershell
-dsh plugin --profile default add E:\Development\my-dsh-plugins\dsh-ai-council
+dsh plugin --profile default add .
 dsh web
 ```
 
