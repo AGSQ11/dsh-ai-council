@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0
+
+- Added an operator-facing Control Room with live subsystem health, model pool, role registry, planner/router/chair/consensus pipeline, active deliberations, role-to-model staffing, round progress, blockers and event timelines.
+- Added live runtime telemetry to the host API without exposing local filesystem paths.
+- Added human-readable Council activity events and explicit phase tracking.
+- Added an always-visible conversation header status chip for Council readiness / active deliberations.
+- Reorganized UI into Control Room, Live, Roles, Templates, Decisions and Configuration.
+- Explicitly surfaces optional or limited subsystems instead of implying capabilities that are not enabled.
+
 ## 0.1.0 - 2026-08-19
 
 - Initial role-driven AI Council implementation for DeepSeek Harness.

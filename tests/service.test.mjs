@@ -91,6 +91,10 @@ test('runs independent role prompts, a rebuttal round, and reaches checked conse
     assert.ok(memberSystems.some(s=>/Security Architect/.test(s)))
     const entry=store.history(result.councilId)
     assert.equal(entry.roundsTranscript.length,2)
+    assert.equal(entry.phase,'completed')
+    assert.ok(entry.events.some(e=>e.type==='planner.selected'))
+    assert.ok(entry.events.some(e=>e.type==='round.started'))
+    assert.ok(entry.events.some(e=>e.type==='council.completed'))
     assert.equal(entry.roundsTranscript[0].members.find(m=>m.roleId==='security-architect').position,'challenge')
   } finally { cleanup() }
 })
@@ -103,6 +107,21 @@ test('a failed member route is replaced and the corporate role survives', async 
     assert.equal(result.status,'ok')
     assert.ok(registrations.calls.filter(c=>c.purpose.includes('member:')).length > 6)
     assert.deepEqual(new Set(result.members.map(m=>m.roleId)),new Set(['principal-architect','staff-implementation','security-architect']))
+  } finally { cleanup() }
+})
+
+
+test('runtime snapshot exposes real operator-facing subsystem state', async () => {
+  const {ctx}=fakeCtx(); const {store,cleanup}=tempStore()
+  try {
+    const service=new AiCouncilService(ctx,store)
+    const runtime=await service.runtimeSnapshot()
+    assert.equal(runtime.subsystems.council.status,'ready')
+    assert.equal(runtime.subsystems.router.models,6)
+    assert.equal(runtime.subsystems.router.providers,6)
+    assert.ok(runtime.subsystems.roleRegistry.memberRoles >= 10)
+    assert.equal(runtime.subsystems.evidence.status,'limited')
+    assert.equal(runtime.activeCount,0)
   } finally { cleanup() }
 })
 

@@ -16,9 +16,17 @@ Instead of asking several models the same question, AI Council creates a tempora
 
 **Failure replaces the model, not the role.** A failed model route is retried through the role's remaining candidates. The replacement receives the same role system prompt and current council state.
 
+## Operator Control Room
+
+Version 0.2.0 adds a human-facing operating surface rather than treating Council as a hidden backend. The Control Room shows the live decision pipeline, active councils, current phase/round, role-to-model staffing, provider/model routing, member positions and confidence, authoritative blockers, Chair activity, consensus progress, and a durable event timeline.
+
+The subsystem grid makes the implementation boundaries explicit: Role Registry, Templates, Planner, Model Router, Model Probe health filtering, Chair/Arbiter, Consensus Gate, Persistence, optional Second Opinion integration, and the current Evidence Gathering mode. Limited or disconnected subsystems are shown as such instead of being implied.
+
+A lightweight status chip is also registered in the conversation header so the operator can see whether Council is ready or actively deliberating without opening Settings.
+
 ## Built-in corporate roles
 
-Twenty presets ship in 0.1.0:
+Twenty corporate role presets ship by default:
 
 - Chair / Technical Director
 - CTO / Technology Strategy
@@ -230,6 +238,6 @@ The plugin therefore uses independent Round 1 positions, heterogeneous routing, 
 
 ## Current boundaries
 
-0.1.0 is a real DSH host/client plugin, but it does not yet give Council members repository tools or MCP tools; they deliberate over the proposal/context supplied by the main agent. A later version can promote selected roles into full DSH child agents with role-specific tool policies when evidence collection needs direct repository or web access.
+0.2.0 is a real DSH host/client plugin, but it does not yet give Council members repository tools or MCP tools; they deliberate over the proposal/context supplied by the main agent. A later version can promote selected roles into full DSH child agents with role-specific tool policies when evidence collection needs direct repository or web access.
 
 The plugin also does not claim that multi-model consensus guarantees correctness. Its purpose is to create a more disciplined, auditable decision process and to expose disagreement instead of hiding it.
