@@ -1,6 +1,6 @@
 {
   "name": "dsh-ai-council",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Role-driven enterprise AI council for DeepSeek Harness with editable corporate personas, multi-round deliberation, dynamic model assignment, consensus gates and failover.",
   "type": "module",
   "main": "lib/index.js",

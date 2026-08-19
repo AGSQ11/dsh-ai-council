@@ -243,26 +243,36 @@ export function debateContext(rounds, chair) {
 }
 
 export function formatCouncilMarkdown(result, { includeMembers = true } = {}) {
-  if (!result) return 'AI Council produced no result.'
-  if (result.status === 'running') return `**AI Council** · ${result.councilId}\n\nCouncil deliberation is running.`
-  if (result.status === 'failed') return `**AI Council failed** · ${result.councilId}\n\n${result.error || 'Unknown failure.'}`
+  if (!result) return '# AI Council Decision\n\nAI Council produced no result.'
+  if (result.status === 'running') return `# AI Council\n\n**Running** · ${result.councilId}\n\nCouncil deliberation is still in progress.`
+  if (result.status === 'failed') return `# AI Council Failed\n\n**Run:** \`${result.councilId}\`\n\n${result.error || 'Unknown failure.'}`
   const label = result.finalStatus === 'consensus' ? 'Consensus reached'
     : result.finalStatus === 'adjudicated' ? 'Chair adjudication'
       : result.finalStatus === 'defer' ? 'Decision deferred' : result.finalStatus || 'Completed'
+  const confidence = Math.round((result.consensusScore || 0) * 100)
+  const approval = Math.round((result.approvalRatio || 0) * 100)
   const lines = [
-    `**AI Council · ${result.templateName || 'Custom Council'}**`,
+    '# AI Council Decision',
     '',
-    `**${label}** · ${Math.round((result.consensusScore || 0) * 100)}% consensus confidence · ${result.rounds || 0} round${result.rounds === 1 ? '' : 's'}`,
+    `**${result.templateName || 'Custom Council'}** · **${label}**`,
+    '',
+    `- Consensus confidence: **${confidence}%**`,
+    `- Weighted approval: **${approval}%**`,
+    `- Debate rounds: **${result.rounds || 0}**`,
     '',
   ]
-  if (result.decision) lines.push(result.decision, '')
-  if (result.rationale) lines.push('**Rationale**', '', result.rationale, '')
-  if (result.requiredChanges?.length) lines.push('**Required conditions / changes**', '', ...result.requiredChanges.map(x => `- ${x}`), '')
-  if (result.unresolvedBlockingIssues?.length) lines.push('**Unresolved blocking issues**', '', ...result.unresolvedBlockingIssues.map(x => `- ${x}`), '')
-  if (result.dissent?.length) lines.push('**Dissent preserved**', '', ...result.dissent.map(x => `- ${x}`), '')
+  if (result.decision) lines.push('## Conclusion', '', result.decision, '')
+  if (result.rationale) lines.push('## Rationale', '', result.rationale, '')
+  if (result.requiredChanges?.length) lines.push('## Required conditions / changes', '', ...result.requiredChanges.map(x => `- ${x}`), '')
+  if (result.unresolvedBlockingIssues?.length) lines.push('## Unresolved blocking issues', '', ...result.unresolvedBlockingIssues.map(x => `- ${x}`), '')
+  if (result.dissent?.length) lines.push('## Dissent preserved', '', ...result.dissent.map(x => `- ${x}`), '')
   if (includeMembers && result.members?.length) {
-    lines.push('**Council members**', '')
-    for (const m of result.members) lines.push(`- **${m.roleName}** — ${m.position.replaceAll('_', ' ')} · ${m.provider}/${m.model} · ${Math.round((m.confidence || 0) * 100)}%`)
+    const cell = value => String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ')
+    lines.push('## Council positions', '', '| Role | Position | Model | Confidence |', '|---|---|---|---:|')
+    for (const m of result.members) {
+      const model = m.provider && m.model ? `${m.provider}/${m.model}` : '—'
+      lines.push(`| ${cell(m.roleName)} | ${cell(String(m.position || '').replaceAll('_', ' '))} | ${cell(model)} | ${Math.round((m.confidence || 0) * 100)}% |`)
+    }
     lines.push('')
   }
   return lines.join('\n').trim()

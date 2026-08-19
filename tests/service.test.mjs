@@ -125,12 +125,61 @@ test('runtime snapshot exposes real operator-facing subsystem state', async () =
   } finally { cleanup() }
 })
 
+
+
+test('tool execution links the durable council run to the DSH tool call id', async () => {
+  const {ctx}=fakeCtx(); const {store,cleanup}=tempStore()
+  try {
+    const service=new AiCouncilService(ctx,store)
+    const result=await service.toolExecute({ proposal:'Review this architecture.', template:'software-architecture', role_ids:['principal-architect','staff-implementation','security-architect'] }, { callId:'call-live-123', signal:new AbortController().signal, agent:{ session:{requestContext(){return{provider:'main',model:'main'}}} } })
+    assert.equal(result.status,'ok')
+    assert.equal(store.history(result.councilId).toolCallId,'call-live-123')
+    assert.equal(store.historyByToolCallId('call-live-123').councilId,result.councilId)
+  } finally { cleanup() }
+})
+
+test('live round telemetry records member completions before the final durable result', async () => {
+  const {ctx}=fakeCtx(); const {store,cleanup}=tempStore()
+  try {
+    const service=new AiCouncilService(ctx,store)
+    const result=await service.runCouncil({ proposal:'Review a service architecture.', template:'software-architecture', roleIds:['principal-architect','staff-implementation','security-architect'] })
+    const entry=store.history(result.councilId)
+    assert.ok(entry.events.filter(e=>e.type==='member.completed').length >= 3)
+    assert.equal(entry.liveRound,null)
+    assert.match(result.markdown,/^# AI Council Decision/m)
+    assert.match(result.markdown,/\| Role \| Position \| Model \| Confidence \|/)
+  } finally { cleanup() }
+})
+
+
+
+test('live host route resolves the exact tool-linked council without exposing hidden context', async () => {
+  const {ctx,registrations}=fakeCtx(); const {store,cleanup}=tempStore()
+  try {
+    const service=new AiCouncilService(ctx,store); service.start()
+    store.beginHistory({ councilId:'council-live-route', source:'tool', proposal:'Visible proposal', context:'hidden context', toolCallId:'call-route-1', phase:'round-1-members', liveRound:{number:1,members:[]}, events:[] })
+    const route=registrations.routes.find(r=>String(r.path).endsWith('/live'))
+    assert.ok(route)
+    let status=0; let payload=''
+    const req={ method:'GET', headers:{'sec-fetch-site':'same-origin'}, url:'/api/ai-council/v1/live?callId=call-route-1' }
+    const res={ writeHead(code){status=code}, end(text){payload=String(text||'')} }
+    await route.handler(req,res)
+    assert.equal(status,200)
+    const body=JSON.parse(payload)
+    assert.equal(body.entry.councilId,'council-live-route')
+    assert.equal(body.entry.proposal,'Visible proposal')
+    assert.equal(body.entry.liveRound.number,1)
+    assert.equal('context' in body.entry,false)
+    service.dispose()
+  } finally { cleanup() }
+})
+
 test('background /council does not bind the autonomous deliberation to the command AbortSignal', async () => {
   const {ctx}=fakeCtx(); const {store,cleanup}=tempStore()
   try {
     const service=new AiCouncilService(ctx,store)
     let seenSignal
-    service.runCouncil=async options=>{ seenSignal=options.signal; await new Promise(r=>setTimeout(r,5)); return {status:'ok',councilId:options.councilId,markdown:'**done**'} }
+    service.runCouncil=async options=>{ seenSignal=options.signal; await new Promise(r=>setTimeout(r,5)); return {status:'ok',councilId:options.councilId,markdown:'# AI Council Decision\n\n## Conclusion\n\nUse option B.'} }
     const commandSignal=new AbortController().signal; const injected=[]
     const response=await service.manualCouncil({
       rawInput:'Choose implementation A or B', signal:commandSignal,
@@ -141,5 +190,7 @@ test('background /council does not bind the autonomous deliberation to the comma
     assert.notEqual(seenSignal,commandSignal)
     await Promise.all([...service.activeRuns.values()].map(x=>x.promise))
     assert.equal(injected.length,1)
+    assert.match(injected[0].content[0].text,/# AI Council Decision/)
+    assert.match(injected[0].content[0].text,/Use option B/)
   } finally { cleanup() }
 })

@@ -93,7 +93,10 @@ test('council output is normal Markdown prose with members and dissent', () => {
     decision:'Use PostgreSQL.', rationale:'It preserves transactional consistency.', requiredChanges:['Add rollback.'], unresolvedBlockingIssues:[], dissent:['Performance preferred Redis.'],
     members:[{roleName:'Principal Architect',position:'approve',provider:'p',model:'m',confidence:.9}],
   })
-  assert.match(text, /\*\*AI Council · Architecture\*\*/)
+  assert.match(text, /^# AI Council Decision/m)
+  assert.match(text, /\*\*Architecture\*\* · \*\*Consensus reached\*\*/)
+  assert.match(text, /## Conclusion/)
   assert.match(text, /Use PostgreSQL/)
+  assert.match(text, /\| Role \| Position \| Model \| Confidence \|/)
   assert.doesNotMatch(text, /```/)
 })

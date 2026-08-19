@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+- Added a live animated Council card directly in the conversation for both native `ai_council` tool calls and background `/council` commands.
+- Linked host deliberations to DSH tool call ids and command council ids so the chat renderer follows the exact run instead of showing generic activity.
+- Added per-member live completion telemetry during each round, including position, confidence, model route, blockers and failover visibility.
+- Replaces the live card with the canonical final Markdown decision when deliberation completes; detailed rounds and events remain available behind a collapsed operator trace.
+- The same canonical Markdown decision is injected into the main AI context for successful manual councils, keeping the human-visible and model-visible result aligned.
+- Upgraded final Council reports to structured Markdown headings and a GFM council-position table.
+
+
 ## 0.2.0
 
 - Added an operator-facing Control Room with live subsystem health, model pool, role registry, planner/router/chair/consensus pipeline, active deliberations, role-to-model staffing, round progress, blockers and event timelines.

@@ -24,6 +24,16 @@ The subsystem grid makes the implementation boundaries explicit: Role Registry, 
 
 A lightweight status chip is also registered in the conversation header so the operator can see whether Council is ready or actively deliberating without opening Settings.
 
+## Live Council in the conversation
+
+Version 0.3.0 makes the deliberation visible in the same chat where the main AI works. A running `ai_council` tool call renders as one animated live Council card rather than a generic tool spinner. Background `/council` commands use the same card without holding the browser command RPC open.
+
+The card follows real persisted host state: selected template, phase, current round, role-to-model staffing, member completions, positions, confidence, blockers, route failovers and recent Council events. It polls the Council host API and does not invent decorative telemetry.
+
+When the run completes, the operational card is replaced by the canonical final Markdown report. The report uses headings, lists and a GFM table of Council positions. Full rounds and activity remain available under a collapsed **Show deliberation details** disclosure so completed chats stay readable.
+
+For a manual `/council`, that exact final Markdown is also injected into the main agent as plugin advisory context. The human-facing conclusion and the model-visible Council result therefore stay aligned. For a native `ai_council` tool call, the same Markdown is naturally returned as the tool result and the main AI continues from it.
+
 ## Built-in corporate roles
 
 Twenty corporate role presets ship by default:
