@@ -1,0 +1,49 @@
+{
+  "name": "dsh-ai-council",
+  "version": "0.1.0",
+  "description": "Role-driven enterprise AI council for DeepSeek Harness with editable corporate personas, multi-round deliberation, dynamic model assignment, consensus gates and failover.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./core": "./lib/core.js",
+    "./presets": "./lib/presets.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "tests",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "SECURITY.md"
+  ],
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-primitives",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-tool",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-settings-general"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check src/index.js && node --check src/core.js && node --check src/presets.js && node --check src/client.js && node --check lib/index.js && node --check lib/client.js"
+  },
+  "keywords": ["deepseek-harness","dsh","dsh-plugin","multi-agent","debate","council","consensus","ai-team","role-play","llm"],
+  "license": "MIT",
+  "author": "AGSQ11",
+  "homepage": "https://github.com/AGSQ11/dsh-ai-council#readme",
+  "repository": { "type": "git", "url": "git+https://github.com/AGSQ11/dsh-ai-council.git" },
+  "bugs": { "url": "https://github.com/AGSQ11/dsh-ai-council/issues" }
+}
